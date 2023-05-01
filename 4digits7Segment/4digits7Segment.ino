@@ -1,7 +1,8 @@
 #include "SevSeg.h"
 
 SevSeg sevseg;
-float timer = 02.00f;
+float timer = 03.00f;
+int count = 0;
 
 //time_loss && speed_up_time
 int buttonPinA0 = A0;
@@ -40,22 +41,8 @@ void is_valid_decrementation(float val) {
   } else {
     int a = (int)(timer * 100);
     int b = (int)(val * 100);
-
-    Serial.print((a - b) % 100);
-    Serial.print("\n");
-    Serial.print(a - b);
-    Serial.print("= ");
-    Serial.print(a);
-    Serial.print("-");
-    Serial.print(b);
-    Serial.print("\n");
-
     if ((a - b) % 100 > 60)
       timer -= 00.41f;
-
-    //a - b  % 100
-    //(102 - 5) % 100 > 60
-    //timer -= 00.41f;
     timer -= val;
   }
 }
@@ -63,7 +50,7 @@ void is_valid_decrementation(float val) {
 void time_loss() {
   buttonState = digitalRead(buttonPinA1);
   if (buttonState == HIGH && A1_pressed == 0) {
-    is_valid_decrementation(00.05f);
+    is_valid_decrementation(01.00f);
     A1_pressed = 1;
     sevseg.setNumberF(timer, 2);
   }
@@ -81,12 +68,15 @@ void speed_up_time() {
 
 void loop() {
   unsigned long currentMillis = millis();
+  //Serial.print("\n");
 
   if ((int)(timer * 100) > 0 && (currentMillis - previousMillis >= interval)) {
     previousMillis = currentMillis;
-    if (timer == 0)
+    if (count == 0)
       timer -= 00.41f;
-    timer -= base_time_decrementation;
+    else
+      timer -= base_time_decrementation;
+    count++;
     sevseg.setNumberF(timer, 2);
   }
 
