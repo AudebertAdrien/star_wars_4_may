@@ -8,10 +8,11 @@ int count = 0;
 int buttonPinA0 = A0;
 int buttonPinA1 = A1;
 int buttonPinA2 = A2;
-int buttonState = 0;
-int A1_pressed = 0;
-int A2_pressed = 0;
-float base_time_decrementation = 00.01f;
+int buttonS    is_active = 1;
+
+//buzzer
+int buzzer = 0;
+int is_active = 0;
 
 unsigned long previousMillis = 0;  // will store last time sevseg was updated
 long interval = 1000;              // interval at which to blink (milliseconds)
@@ -31,8 +32,8 @@ void setup() {
 
   //time_loss && speed_up_time
   pinMode(buttonPinA0, INPUT);
-
-  Serial.begin(115200);
+  pinMode(buzzer, OUTPUT);
+  //Serial.begin(115200);
 }
 
 void is_valid_decrementation(float val) {
@@ -66,33 +67,32 @@ void speed_up_time() {
     interval = 1000;
 }
 
+int stop_time() {
+  buttonState = digitalRead(buttonPinA2);
+  if (buttonState == HIGH) {
+    return (0);
+  } else
+    return (1);
+}
+
 void loop() {
   unsigned long currentMillis = millis();
   //Serial.print("\n");
 
-  if ((int)(timer * 100) > 0 && (currentMillis - previousMillis >= interval)) {
+  if ((int)(timer * 100) > 0 && (currentMillis - previousMillis >= interval) && stop_time()) {
     previousMillis = currentMillis;
     if (count == 0)
-      timer -= 00.41f;
+      is_valid_decrementation(00.41f);
     else
-      timer -= base_time_decrementation;
+      is_valid_decrementation(00.01f);
     count++;
+    digitalWrite(buzzer, HIGH);
+
     sevseg.setNumberF(timer, 2);
   }
-
   speed_up_time();
   time_loss();
+  stop_time();
 
   sevseg.refreshDisplay();
 }
-
-
-/*
-void stop_time() {
-  buttonState = digitalRead(buttonPinA2);
-  if (buttonState == HIGH) {
-    T = 00.00f;
-  } else
-    T = 00.01f;
-}
-*/
