@@ -75,36 +75,36 @@ void is_valid_decrementation(float val) {
   }
   int a = (int)(timer * 100);
   int b = (int)(val * 100);
+  
   Serial.println("================");
   Serial.print(a);
   Serial.print(" : ");
-  Serial.println(b);
+  Serial.print(timer);
+  Serial.print(" : ");
+  Serial.println((a - b) % 100);
   Serial.println("================");
-  Serial.print((a - b) % 100);
-  Serial.print("\n");
 
-  if (((a - b) % 100) > 60 || ((a - b) % 100) == 0) {
+  Serial.print("\n");
+  
+
+  if (((a + 1) % 100) == 0) {
+    
     Serial.println("1////1");
     Serial.println(timer);
     Serial.println("1////1");
+    
+
     timer -= 00.41f;
   } else {
+    
     Serial.println("2////2");
     Serial.println(timer);
     Serial.println("2////2");
+    
     timer -= val;
   }
-
-  /*
-    6:10:27.517 -> 1
-    16:10:27.517 -> -2-
-    16:10:28.511 -> 0
-    16:10:28.511 -> ////
-    16:10:28.511 -> 9.02
-    16:10:28.511 -> ////
-    16:10:29.506 -> 59
-  */
 }
+
 void loop() {
   unsigned long currentMillis = millis();
   int i;
@@ -116,7 +116,7 @@ void loop() {
 
   sevseg.setNumberF(timer, 2);
 
-  if ((int)(timer * 100) > 0 && (currentMillis - previousMillis >= interval) && stop_time()) {
+  if ((int)(timer * 100) > 0 && (currentMillis - previousMillis > interval) && stop_time()) {
     previousMillis = currentMillis;
 
     /*
@@ -124,6 +124,7 @@ void loop() {
       digitalWrite(buzzer, HIGH);
     }
     */
+
     if (timer == 10.00f)
       is_valid_decrementation(00.41f);
     else
