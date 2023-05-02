@@ -1,18 +1,19 @@
 #include "SevSeg.h"
 
 SevSeg sevseg;
-float timer = 03.00f;
-int count = 0;
+float timer = 10.00f;
 
 //time_loss && speed_up_time
 int buttonPinA0 = A0;
 int buttonPinA1 = A1;
 int buttonPinA2 = A2;
-int buttonS    is_active = 1;
+int buttonState = 0;
+int A1_pressed = 0;
+int A2_pressed = 0;
 
 //buzzer
 int buzzer = 0;
-int is_active = 0;
+int buzzer_time = 0;
 
 unsigned long previousMillis = 0;  // will store last time sevseg was updated
 long interval = 1000;              // interval at which to blink (milliseconds)
@@ -33,20 +34,9 @@ void setup() {
   //time_loss && speed_up_time
   pinMode(buttonPinA0, INPUT);
   pinMode(buzzer, OUTPUT);
-  //Serial.begin(115200);
 }
 
-void is_valid_decrementation(float val) {
-  if (timer - val <= 0) {
-    timer = 0;
-  } else {
-    int a = (int)(timer * 100);
-    int b = (int)(val * 100);
-    if ((a - b) % 100 > 60)
-      timer -= 00.41f;
-    timer -= val;
-  }
-}
+
 
 void time_loss() {
   buttonState = digitalRead(buttonPinA1);
@@ -61,10 +51,13 @@ void time_loss() {
 
 void speed_up_time() {
   buttonState = digitalRead(buttonPinA0);
-  if (buttonState == HIGH)
-    interval = 100;
-  else
+  if (buttonState == HIGH) {
+    buzzer_time = 600;
+    interval = 20;
+  } else {
+    buzzer_time = 0;
     interval = 1000;
+  }
 }
 
 int stop_time() {
@@ -75,24 +68,43 @@ int stop_time() {
     return (1);
 }
 
+void is_valid_decrementation(float val) {
+  if (timer - val <= 0) {
+    timer = 0;
+  } else {
+    int a = (int)(timer * 100);
+    int b = (int)(val * 100);
+    if ((a - b) % 100 > 60)
+      timer -= 00.41f;
+    else
+      timer -= val;
+  }
+}
+
 void loop() {
   unsigned long currentMillis = millis();
-  //Serial.print("\n");
+  int i;
+  int bip_len = interval + buzzer_time;
 
-  if ((int)(timer * 100) > 0 && (currentMillis - previousMillis >= interval) && stop_time()) {
-    previousMillis = currentMillis;
-    if (count == 0)
-      is_valid_decrementation(00.41f);
-    else
-      is_valid_decrementation(00.01f);
-    count++;
-    digitalWrite(buzzer, HIGH);
-
-    sevseg.setNumberF(timer, 2);
-  }
   speed_up_time();
   time_loss();
   stop_time();
+
+  sevseg.setNumberF(timer, 2);
+
+  if ((int)(timer * 100) > 0 && (currentMillis - previousMillis > interval) && stop_time()) {
+    previousMillis = currentMillis;
+
+    /*
+    for (i = 0; i < bip_len; i++) {
+      digitalWrite(buzzer, HIGH);
+    }
+    */
+    is_valid_decrementation(00.01f);
+    sevseg.setNumberF(timer, 2);
+  }
+
+  //digitalWrite(buzzer, LOW);
 
   sevseg.refreshDisplay();
 }
